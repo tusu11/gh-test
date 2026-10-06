@@ -1,18 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>TipsNote : GitHub Pages Sample</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/marx/2.0.4/marx.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>three.js Playground</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #111; color: #eee; font-family: system-ui, sans-serif; }
+  canvas { display: block; }
+  #info { position: absolute; top: 12px; left: 12px; font-size: 14px; opacity: 0.8; pointer-events: none; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
 </head>
 
 <body>
-<main>
-  <h1>GitHub Pages のサンプルです</h1>
-</main>
+<div id="info">three.js Playground — ドラッグで回転 / ホイールでズーム</div>
 
-<script>
-console.log('GitHub Pages Sample');
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x111111);
+
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 1.5, 5);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+const light = new THREE.DirectionalLight(0xffffff, 2);
+light.position.set(3, 5, 4);
+scene.add(light);
+
+// 仮置きのコンテンツ: 回転するトーラスノットと床のグリッド
+const knot = new THREE.Mesh(
+  new THREE.TorusKnotGeometry(1, 0.3, 160, 24),
+  new THREE.MeshStandardMaterial({ color: 0x44aaff, metalness: 0.3, roughness: 0.4 })
+);
+scene.add(knot);
+
+const grid = new THREE.GridHelper(10, 20, 0x444444, 0x222222);
+grid.position.y = -1.6;
+scene.add(grid);
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const t = clock.getElapsedTime();
+  knot.rotation.x = t * 0.4;
+  knot.rotation.y = t * 0.6;
+  controls.update();
+  renderer.render(scene, camera);
+});
 </script>
 </body>
 </html>
